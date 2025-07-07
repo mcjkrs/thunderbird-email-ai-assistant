@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Email Assistant</title>
+  <link rel="stylesheet" type="text/css" href="options.css">
+</head>
+<body>
+  <div class="container">
+    <h1>Mail Assistant Settings</h1>
+
+    <div class="tab-bar">
+      <button class="tab-button active" data-tab="general-settings">General</button>
+      <button class="tab-button" data-tab="custom-tags">Custom Tags</button>
+    </div>
+
+    <!-- General Settings Tab -->
+    <div id="general-settings" class="tab-content active">
+      <form id="general-options-form">
+        <div class="form-group">
+          <label for="provider">LLM Provider:</label>
+          <select id="provider" name="provider">
+            <option value="ollama">Ollama</option>
+            <option value="mistral">Mistral</option>
+            <option value="gemini">Google Gemini</option>
+            <option value="deepseek">DeepSeek</option>
+            <option value="openai">OpenAI</option>
+            <option value="claude">Anthropic Claude</option>
+          </select>
+        </div>
+        <div id="ollama-settings" class="provider-settings">
+          <div class="form-group">
+            <label for="ollama-api-url">Ollama API URL:</label>
+            <input type="url" id="ollama-api-url" name="ollama-api-url">
+          </div>
+          <div class="form-group">
+            <label for="ollama-model">Ollama Model Name:</label>
+            <input type="text" id="ollama-model" name="ollama-model">
+            <p class="help-text">To add a new model, run <code>ollama pull &lt;model_name&gt;</code>.</p>
+          </div>
+          <hr>
+          <div class="help-section">
+            <h2>Ollama Setup</h2>
+            <p>Ollama is a powerful tool that allows you to run open-source large language models locally. You must first download and install the <a href="https://ollama.com/" target="_blank">Ollama software</a> and host your own instance.</p>
+            <p><b>Privacy Benefit:</b> By using Ollama, all email analysis is performed on your own computer. No data from your emails is ever sent to a third-party cloud service, ensuring maximum privacy.</p>
+            <p>For the extension to connect, you must also configure Ollama to accept requests from Thunderbird. Start your server with the <code>OLLAMA_ORIGINS</code> environment variable set appropriately:</p>
+            <pre><code>OLLAMA_ORIGINS='*' ollama serve</code></pre>
+          </div>
+        </div>
+
+        <!-- Mistral Settings -->
+        <div id="mistral-settings" class="provider-settings" style="display: none;">
+          <div class="form-group">
+            <label for="mistral-api-key">Mistral API Key:</label>
+            <input type="password" id="mistral-api-key" name="mistral-api-key">
+          </div>
+          <div class="help-section">
+            <p><b>Privacy Notice:</b> By using Mistral, the content of your emails will be sent to and processed by a third-party service (<a href="https://mistral.ai/" target="_blank">Mistral AI</a>). This includes potentially sensitive data</p>
+            <p><b>GDPR Compliance:</b> Mistral is a company based in the EU, which may make it a suitable choice for users concerned with GDPR compliance.</p>
+          </div>
+        </div>
+
+        <!-- OpenAI Settings -->
+        <div id="openai-settings" class="provider-settings" style="display: none;">
+          <div class="form-group">
+            <label for="openai-api-key">OpenAI API Key:</label>
+            <input type="password" id="openai-api-key" name="openai-api-key">
+          </div>
+          <div class="help-section">
+            <p><b>Privacy Notice:</b> By using OpenAI, the content of your emails will be sent to and processed by a third-party service (<a href="https://openai.com" target="_blank">OpenAI</a>). This includes potentially sensitive data.</p>
+          </div>
+        </div>
+
+        <!-- Gemini Settings -->
+        <div id="gemini-settings" class="provider-settings" style="display: none;">
+          <div class="form-group">
+            <label for="gemini-api-key">Google Gemini API Key:</label>
+            <input type="password" id="gemini-api-key" name="gemini-api-key">
+          </div>
+          <div class="help-section">
+            <p><b>Privacy Notice:</b> By using Google Gemini, the content of your emails will be sent to and processed by a third-party service (<a href="https://deepmind.google/technologies/gemini/" target="_blank">Google</a>). This includes potentially sensitive data.</p>
+          </div>
+        </div>
+
+        <!-- Claude Settings -->
+        <div id="claude-settings" class="provider-settings" style="display: none;">
+          <div class="form-group">
+            <label for="claude-api-key">Anthropic Claude API Key:</label>
+            <input type="password" id="claude-api-key" name="claude-api-key">
+          </div>
+          <div class="help-section">
+            <p><b>Privacy Notice:</b> By using Anthropic Claude, the content of your emails will be sent to and processed by a third-party service (<a href="https://www.anthropic.com/" target="_blank">Anthropic</a>). This includes potentially sensitive data.</p>
+          </div>
+        </div>
+
+
+
+        <!-- DeepSeek Settings -->
+        <div id="deepseek-settings" class="provider-settings" style="display: none;">
+          <div class="form-group">
+            <label for="deepseek-api-key">DeepSeek API Key:</label>
+            <input type="password" id="deepseek-api-key" name="deepseek-api-key">
+          </div>
+          <div class="help-section">
+            <p><b>Privacy Notice:</b> By using DeepSeek, the content of your emails will be sent to and processed by a third-party service (<a href="https://www.deepseek.com/" target="_blank">DeepSeek</a>). This includes potentially sensitive data.</p>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <button type="submit">Save General Settings</button>
+          <span id="general-status-message"></span>
+        </div>
+      </form>
+    </div>
+
+    <!-- Custom Tags Tab -->
+    <div id="custom-tags" class="tab-content">
+      <p class="help-text">Define custom categories for email analysis. The key will be used in the prompt to the LLM.</p>
+      <div id="tag-list-container"></div>
+      <button id="add-new-tag-btn">Add New Tag</button>
+    </div>
+
+  </div>
+
+  <!-- Modal for Add/Edit Tag -->
+  <div id="tag-modal" class="modal" style="display: none;">
+    <div class="modal-content">
+      <span class="close-button">&times;</span>
+      <h2 id="modal-title">Add New Tag</h2>
+      <form id="tag-form">
+        <input type="hidden" id="tag-index" value="">
+        <div class="form-group">
+          <label for="tag-name">Tag Name:</label>
+          <input type="text" id="tag-name" required>
+        </div>
+        <div class="form-group">
+          <label for="tag-key">Tag Key:</label>
+          <input type="text" id="tag-key" required pattern="[a-z0-9_]+">
+          <p class="help-text">Unique identifier (lowercase, numbers, underscores only).</p>
+        </div>
+        <div class="form-group">
+          <label for="tag-color">Tag Color:</label>
+          <input type="color" id="tag-color" value="#3498DB">
+        </div>
+        <div class="form-group">
+          <label for="tag-prompt">LLM Prompt Instruction:</label>
+          <textarea id="tag-prompt" rows="3" required></textarea>
+        </div>
+        <div class="form-group">
+          <button type="submit">Save Tag</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="options-bundle.js"></script>
+</body>
+</html>

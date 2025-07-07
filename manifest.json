@@ -1,0 +1,40 @@
+{
+  "manifest_version": 2,
+  "name": "Email Assistant",
+  "version": "1.0.1",
+  "description": "Automatically tags messages base on AI rules",
+  "permissions": [
+    "messagesRead",
+    "messagesModify",
+    "messagesUpdate",
+    "accountsRead",
+    "storage",
+    "menus",
+    "notifications",
+    "messagesTags",
+    "messagesTagsList"
+  ],
+  "optional_permissions": [
+    "http://*/*",
+    "https://*/*",
+    "https://api.openai.com/",
+    "https://generativelanguage.googleapis.com/",
+    "https://api.anthropic.com/",
+    "https://api.mistral.ai/"
+  ],
+  "background": {
+    "page": "background.html"
+  },
+  "options_ui": {
+    "page": "options.html",
+    "open_in_tab": true
+  },
+  "browser_specific_settings": {
+    "thunderbird": {
+      "id": "mail-assistant-0.1@entestat.com"
+    },
+    "gecko": {
+      "id": "mail-assistant-0.1@entestat.com"
+    }
+  }
+}
