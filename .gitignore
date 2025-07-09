@@ -1,0 +1,23 @@
+*.iml
+# Node.js
+node_modules/
+npm-debug.log
+package-lock.json
+
+# Build artifacts
+dist/
+web-ext-artifacts/
+background-bundle.js
+options-bundle.js
+
+# Local configuration
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Secrets
+sign.bash
+/tmp/**
