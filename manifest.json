@@ -1,7 +1,7 @@
 {
   "manifest_version": 2,
   "name": "Email Assistant",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Automatically tags messages base on AI rules",
   "permissions": [
     "messagesRead",
