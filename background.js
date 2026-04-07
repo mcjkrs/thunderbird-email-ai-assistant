@@ -19,48 +19,75 @@ async function analyzeEmail(structuredData) {
   }
 }
 
-console.log("Spam-Filter Extension: Setting up onNewMailReceived handler");
+async function processMessage(message) {
+  const fullMessage = await messenger.messages.getFull(message.id);
+  const { body, attachments } = findEmailParts(fullMessage.parts);
+
+  const structuredData = {
+    headers: fullMessage.headers,
+    body: body,
+    attachments: attachments
+  };
+
+  const analysis = await analyzeEmail(structuredData);
+
+  if (!analysis) {
+    console.log("Skipping tagging due to analysis failure for ID:", message.id);
+    return;
+  }
+
+  const { customTags } = await messenger.storage.local.get({ customTags: DEFAULTS.customTags });
+  const messageDetails = await messenger.messages.get(message.id);
+  const tagSet = new Set(messageDetails.tags || []);
+
+  // Handle hardcoded tags
+  if (analysis.is_scam || analysis.spf_pass === false || analysis.dkim_pass === false) tagSet.add(HARDCODED_TAGS.is_scam.key);
+  if (analysis.spf_pass === false) tagSet.add(HARDCODED_TAGS.spf_fail.key);
+  if (analysis.dkim_pass === false) tagSet.add(HARDCODED_TAGS.dkim_fail.key);
+
+  // Handle dynamic custom tags
+  for (const tag of customTags) {
+    if (analysis[tag.key] === true) {
+      tagSet.add(TAG_KEY_PREFIX + tag.key);
+    }
+  }
+  tagSet.add(TAG_KEY_PREFIX + HARDCODED_TAGS.tagged);
+  console.log("Email Assistant: Analysis complete, tagging...", tagSet);
+
+  await messenger.messages.update(message.id, { tags: Array.from(tagSet) });
+}
+
+// Trigger on new mail
+console.log("Email Assistant: Setting up onNewMailReceived handler");
 
 messenger.messages.onNewMailReceived.addListener(async (folder, messages) => {
-  console.log("Spam-Filter Extension: New messages, yey!");
-
+  console.log("Email Assistant: New messages received");
   for (const message of messages.messages) {
     try {
-      const fullMessage = await messenger.messages.getFull(message.id);
-      const { body, attachments } = findEmailParts(fullMessage.parts);
-      
-      const structuredData = {
-          headers: fullMessage.headers,
-          body: body,
-          attachments: attachments
-      };
+      await processMessage(message);
+    } catch (error) {
+      console.error("Error processing message ID:", message.id, error);
+    }
+  }
+});
 
-      const analysis = await analyzeEmail(structuredData);
-      
-      if (!analysis) {
-        console.log("Skipping tagging due to analysis failure for ID:", message.id);
-        continue;
-      }
+// Context menu for manual trigger
+messenger.menus.create({
+  id: "analyze-email",
+  title: "Analyze with Email Assistant",
+  contexts: ["message_list"],
+});
 
-      const { customTags } = await messenger.storage.local.get({ customTags: DEFAULTS.customTags });
-      const messageDetails = await messenger.messages.get(message.id);
-      const tagSet = new Set(messageDetails.tags || []);
-      
-      // Handle hardcoded tags
-      if (analysis.is_scam || analysis.spf_pass === false || analysis.dkim_pass === false) tagSet.add(HARDCODED_TAGS.is_scam.key);
-      if (analysis.spf_pass === false) tagSet.add(HARDCODED_TAGS.spf_fail.key);
-      if (analysis.dkim_pass === false) tagSet.add(HARDCODED_TAGS.dkim_fail.key);
+messenger.menus.onClicked.addListener(async (info) => {
+  if (info.menuItemId !== "analyze-email") return;
 
-      // Handle dynamic custom tags
-      for (const tag of customTags) {
-        if (analysis[tag.key] === true) {
-          tagSet.add(TAG_KEY_PREFIX + tag.key);
-        }
-      }
-      tagSet.add(TAG_KEY_PREFIX + HARDCODED_TAGS.tagged);
-      console.log("Spam-Filter Extension: Analysis complete, tagging...", tagSet);
+  const selectedMessages = info.selectedMessages;
+  if (!selectedMessages || selectedMessages.messages.length === 0) return;
 
-      await messenger.messages.update(message.id, { tags: Array.from(tagSet) });
+  console.log(`Email Assistant: Manually analyzing ${selectedMessages.messages.length} message(s)`);
+  for (const message of selectedMessages.messages) {
+    try {
+      await processMessage(message);
     } catch (error) {
       console.error("Error processing message ID:", message.id, error);
     }
