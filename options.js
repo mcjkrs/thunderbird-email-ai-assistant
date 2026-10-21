@@ -51,6 +51,8 @@ document.addEventListener('DOMContentLoaded', async () => {
       document.getElementById('gemini-api-key').value = settings.geminiApiKey;
     if(document.getElementById('claude-api-key'))
       document.getElementById('claude-api-key').value = settings.claudeApiKey;
+    if(document.getElementById('claude-model'))
+      document.getElementById('claude-model').value = settings.claudeModel;
     if(document.getElementById('mistral-api-key'))
       document.getElementById('mistral-api-key').value = settings.mistralApiKey;
     if(document.getElementById('deepseek-api-key'))
@@ -83,6 +85,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         break;
       case 'claude':
         settingsToSave.claudeApiKey = document.getElementById('claude-api-key').value.trim();
+        settingsToSave.claudeModel = document.getElementById('claude-model').value.trim() || 'claude-haiku-5-5';
         permissionOrigin = 'https://api.anthropic.com/';
         break;
       case 'mistral':

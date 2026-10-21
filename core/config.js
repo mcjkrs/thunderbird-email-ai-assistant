@@ -67,6 +67,7 @@ export const DEFAULTS = {
   openaiApiKey: '',
   geminiApiKey: '',
   claudeApiKey: '',
+  claudeModel: 'claude-haiku-5-5',
   mistralApiKey: '',
   deepseekApiKey: '',
   customTags: DEFAULT_CUSTOM_TAGS

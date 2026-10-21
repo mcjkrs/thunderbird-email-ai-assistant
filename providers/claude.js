@@ -2,12 +2,13 @@ import { buildPrompt } from '../core/analysis.js';
 import {extractJson} from "./utils";
 
 const CLAUDE_API_URL = "https://api.anthropic.com/v1/messages";
-const CLAUDE_MODEL = "claude-sonnet-4-0";
+const CLAUDE_DEFAULT_MODEL = "claude-haiku-5-5";
 const CLAUDE_API_VERSION = "2023-06-01";
 
 export async function analyzeWithClaude(settings, structuredData, customTags) {
   const prompt = buildPrompt(structuredData, customTags);
   const { claudeApiKey } = settings;
+  const model = (settings.claudeModel || '').trim() || CLAUDE_DEFAULT_MODEL;
 
   if (!claudeApiKey) {
     console.error("Claude Error: API key is not set.");
@@ -24,7 +25,7 @@ export async function analyzeWithClaude(settings, structuredData, customTags) {
         'anthropic-version': CLAUDE_API_VERSION
       },
       body: JSON.stringify({
-        model: CLAUDE_MODEL,
+        model: model,
         max_tokens: 4096,
         system: "You are an email analysis expert. Your task is to analyze the provided email data and respond only with a single, clean JSON object that strictly follows the requested schema. Do not include any conversational text, markdown formatting, or explanations in your response.",
         messages: [
@@ -41,7 +42,9 @@ export async function analyzeWithClaude(settings, structuredData, customTags) {
     }
 
     const result = await response.json();
-    const rawText = result.content[0].text;
+    const textBlock = (result.content || []).find(b => b.type === 'text');
+    if (!textBlock) throw new Error('Claude returned no text block');
+    const rawText = textBlock.text;
     const jsonText = extractJson(rawText);
 
     return JSON.parse(jsonText);
