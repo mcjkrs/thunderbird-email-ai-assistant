@@ -77,24 +77,24 @@ document.addEventListener('DOMContentLoaded', async () => {
         break;
       case 'openai':
         settingsToSave.openaiApiKey = document.getElementById('openai-api-key').value.trim();
-        permissionOrigin = 'https://api.openai.com/';
+        permissionOrigin = 'https://api.openai.com/*';
         break;
       case 'gemini':
         settingsToSave.geminiApiKey = document.getElementById('gemini-api-key').value.trim();
-        permissionOrigin = 'https://generativelanguage.googleapis.com/';
+        permissionOrigin = 'https://generativelanguage.googleapis.com/*';
         break;
       case 'claude':
         settingsToSave.claudeApiKey = document.getElementById('claude-api-key').value.trim();
         settingsToSave.claudeModel = document.getElementById('claude-model').value.trim() || 'claude-haiku-5-5';
-        permissionOrigin = 'https://api.anthropic.com/';
+        permissionOrigin = 'https://api.anthropic.com/*';
         break;
       case 'mistral':
         settingsToSave.mistralApiKey = document.getElementById('mistral-api-key').value.trim();
-        permissionOrigin = 'https://api.mistral.ai/';
+        permissionOrigin = 'https://api.mistral.ai/*';
         break;
       case 'deepseek':
         settingsToSave.deepseekApiKey = document.getElementById('deepseek-api-key').value.trim();
-        permissionOrigin = 'https://api.deepseek.com/';
+        permissionOrigin = 'https://api.deepseek.com/*';
         break;
     }
 
